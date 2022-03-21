@@ -7,7 +7,6 @@ const jwt = require('jsonwebtoken');
 
 rutas.get("/", async (_, res) => {
   const skaters = await db.listar();
-  console.log(skaters);
   res.render("Dashboard", {skaters});
 });
 
@@ -17,6 +16,16 @@ rutas.get("/skater-create", (_, res) => {
 
 rutas.get("/login-inicio", (_, res) => {
   res.render("login");
+});
+
+rutas.get("/admin", async (_, res) => {
+  const skaters = await db.listar();
+  res.render("admin", {skaters});
+});
+
+rutas.get("/datos", async (_, res) => {
+  const skaters = await db.listar();
+  res.render("datos", {skaters});
 });
 
 rutas.post("/skater-create", (req, res) => {
@@ -33,7 +42,6 @@ rutas.post("/skater-create", (req, res) => {
     );
 });
 
-
 rutas.get('/login-inicio', (req, res) => {
   const { email, password } = req.query;
   const admin = users.find((u) => u.email == email && u.password == password);
@@ -44,7 +52,7 @@ rutas.get('/login-inicio', (req, res) => {
       data: admin,
       },
       );
-      res.render("Admin", {})
+      res.render("admin", {})
    } else {
        res.send('Usuario o contraseña incorrecta')
    }
