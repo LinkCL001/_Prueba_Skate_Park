@@ -59,3 +59,14 @@ app.use(api);
 app.use(front);
 
 
+// 1. Crear una API REST con el Framework Express (2 Puntos)
+// 2. Servir contenido dinámico con express-handlebars (1 Punto)
+// 3. Ofrecer la funcionalidad Upload File con express-fileupload(1 Punto)
+// 4. Implementar seguridad y restricción de recursos ocontenido con JWT (2 Puntos)
+// 5. Aplicar testing E2E, con Cypressunavezquesehayafinalizadolaconstruccióndela
+// aplicación, el mismo debe contener al menos 3 pruebas.(2 Puntos)
+// a. Smoke test.
+// b. Test a 1 input.
+// c. Test a 1 botón.
+// 6. Realizar la configuración necesaria del proyecto paraser desplegado en Heroku.
+// (2 Puntos)
