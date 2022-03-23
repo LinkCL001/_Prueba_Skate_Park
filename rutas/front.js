@@ -17,12 +17,15 @@ rutas.get("/login", (_, res) => {
   res.render("login");
 });
 
-rutas.get("/admin", (_, res) => {
-  res.render("admin");
+rutas.get("/admin", async (_, res) => {
+  const skaters = await db.listar();
+  res.render("Admin", { skaters });
 });
 
-rutas.get("/datos", (_, res) => {
-  res.render("datos");
+rutas.get("/datos", async (req, res) => {
+  const skaterId = req.query.skaterId
+  const skaters = await db.buscar(skaterId);
+  res.render("Datos", { skaters });
 });
 
 rutas.post("/skater-create", (req, res) => {
@@ -40,25 +43,30 @@ rutas.post("/skater-create", (req, res) => {
 });
 
 rutas.post("/login-inicio", async (req, res) => {
-  const { email, password } = req.body;
-  const skaters = await db.buscar(email,password);
-  console.log(skaters);
-  if (skaters == req.body) {
-    const token = jwt.sign(
-      {
-        exp: Math.floor(Date.now() / 1000) + 120,
-        data: skaters,
-      },
-      secretKey
-    );
-  } else {
-    res.send("Usuario o contraseña incorrecta");
-  } 
-  const { admin } = req.body
-  if (admin) {
-    res.render("Admin");
-  } else {
-    res.render("Datos");
+  try {
+    const { email, password } = req.body;
+    console.log(req.body);
+    /**
+     * Usuario logueado.
+     */
+    const skater = await db.login(email,password);
+    
+    if (skater) {
+      const token = jwt.sign(
+        {
+          exp: Math.floor(Date.now() / 1000) + 120,
+          data: skater,
+        },
+        secretKey
+        );
+      } else {
+        res.send("Usuario o contraseña incorrecta");
+      } 
+
+    const template = skater.admin === true ? '/admin' : `/datos?skaterId=${skater.id}`
+    res.redirect(template);
+  } catch (err) {
+    console.log({err})
   }
 })
 
