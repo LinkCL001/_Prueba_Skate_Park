@@ -1,5 +1,6 @@
 require("dotenv").config();
 const { Pool } = require("pg");
+const { unlink } = require("fs");
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -12,18 +13,15 @@ const pool = new Pool(
 const listar = () =>
   pool.query("SELECT * FROM skaters").then((res) => res.rows);
 
-
 const buscar = async (skaterId) =>
   pool
-    .query("SELECT * FROM skaters WHERE id = $1 LIMIT 1", [
-      skaterId,
-    ])
+    .query("SELECT * FROM skaters WHERE id = $1 LIMIT 1", [skaterId])
     .then((res) => {
-      return res.rows
+      return res.rows;
     })
-    .catch((err) => {
-      console.log({err})
-    })
+    .catch((e) => {
+      console.log({ e });
+    });
 
 const login = async (email, password) =>
   pool
@@ -32,12 +30,12 @@ const login = async (email, password) =>
       password,
     ])
     .then((res) => {
-      return res.rows[0]
+      return res.rows[0];
     })
-    .catch((err) => {
-      console.log({err})
-    })
-   
+    .catch((e) => {
+      console.log({ e });
+    });
+
 const ingresar = (x) =>
   pool.query(
     "INSERT INTO skaters(email,nombre,password,anos_experiencia,especialidad,foto,estado,admin) VALUES($1,$2,$3,$4,$5,$6,$7,$8)",
@@ -52,6 +50,59 @@ const ingresar = (x) =>
       x.admin,
     ]
   );
-const eliminar = (id) => pool.query("DELETE FROM skaters WHERE id = $1", [id]);
 
-module.exports = { listar, buscar, ingresar, eliminar, login };
+const eliminar = async (id) => {
+  try {
+    const imagen = await pool.query(
+      `SELECT foto FROM skaters WHERE id = '${id}'`
+    );
+    const srcImg = "./public/imgs" + imagen.rows[0].foto;
+    const consulta = {
+      text: "DELETE FROM skaters WHERE id = $1 RETURNING *;",
+      values: [id],
+    };
+    const result = await pool.query(consulta);
+    if (result.rowCount > 0) {
+      unlink(srcImg, () => true);
+    }
+    return result.rowCount;
+  } catch (e) {
+    console.log(e);
+    return false;
+  }
+};
+
+const update = async (data) => {
+  const query =
+    "UPDATE skaters SET nombre = $1, password = $2, anos_experiencia = $3, especialidad = $4 WHERE id = $5 RETURNING*";
+  const values = data;
+  try {
+    const result = await pool.query(consulta(query, values));
+    return result.rows;
+  } catch (e) {
+    console.log(e);
+    return e;
+  }
+};
+
+const updateStatus = async (estado, id) => {
+  try {
+    const result = await pool.query(
+      `UPDATE skaters SET estado = ${estado} WHERE id = ${id} RETURNING *;`
+    );
+    return result.rowCount;
+  } catch (e) {
+    console.log(e);
+    return false;
+  }
+};
+
+module.exports = {
+  listar,
+  buscar,
+  ingresar,
+  eliminar,
+  login,
+  update,
+  updateStatus,
+};

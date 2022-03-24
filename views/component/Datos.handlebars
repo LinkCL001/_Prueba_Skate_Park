@@ -4,7 +4,7 @@
       <h2>Datos del perfil</h2>
       <hr class="w-50" />
 
-      <form>
+      <form method="GET" action="/skater-delete" enctype="multipart/form-data">
         {{#each skaters}}
         <div class="form-group row w-50 m-auto">
           <div class="form-group col-12 col-sm-6">
@@ -48,7 +48,7 @@
           <button class="btn btn-primary">Actualizar</button>
         </div>
         <div>
-          <button class="btn btn-danger">Eliminar cuenta</button>
+          <button type="submit" class="btn btn-danger">Eliminar cuenta</button>
         </div>
         {{/each}}
       </form>

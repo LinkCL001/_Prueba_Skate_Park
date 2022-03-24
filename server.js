@@ -17,12 +17,14 @@ app.use(bodyParser.json())
 
 app.set("view engine", "handlebars");
 
-//app.use("/", express.static(__dirname + "/rutas/public/css"));
-
-// app.set("views", "./views")
-
+app.use(
+  "/", express.static("public")
+);
 app.use(
   "/imgs", express.static(__dirname + "/rutas/public/imgs")
+);
+app.use(
+  "/css", express.static(__dirname + "/node_modules/bootstrap/dist/css")
 );
 app.use(
   "/bootstrap",

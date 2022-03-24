@@ -28,6 +28,10 @@ rutas.get("/datos", async (req, res) => {
   res.render("Datos", { skaters });
 });
 
+rutas.get("/skater-delete", async (_, res) => {
+  res.render("delete");
+});
+
 rutas.post("/skater-create", (req, res) => {
   const { fotos } = req.files;
   fotos.mv(`${__dirname}/public/imgs/${fotos.name}`, (err) => {
@@ -45,10 +49,6 @@ rutas.post("/skater-create", (req, res) => {
 rutas.post("/login-inicio", async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(req.body);
-    /**
-     * Usuario logueado.
-     */
     const skater = await db.login(email,password);
     
     if (skater) {
@@ -72,17 +72,52 @@ rutas.post("/login-inicio", async (req, res) => {
 
 const secretKey = process.env["SECRET_KEY"]
 
-// rutas.get("/skater-delete/:id", async (req, res) => {
-//   const { id } = req.params
-//   const { confirmado } = req.query
-//   try {
-//     if (confirmado)
-//       await db.eliminar(id).then(() => res.redirect("/"))
-//     else
-//       res.render("admin", { user: await db.buscar(id) })
-//   } catch (err) {
-//     res.render("error", { title: "Error al confirmar el skater", message: err })
-//   }
-// })
+rutas.post("/skater-delete/:id", async (req, res) => {
+  const { id } = req.params
+  const { confirmado } = req.query
+  try {
+    if (confirmado)
+      await db.eliminar(id).then(() => res.redirect("/"))
+    else
+      res.redirect ("delete", { skater: await db.buscar(skaterId) })
+  } catch (err) {
+    res.render("error", { title: "Error al confirmar el skater", message: err })
+  }
+})
+
+rutas.post("/skater-edit/:id", async (req, res) => {
+	const { id } = req.params;
+	let usuario = Object.values(req.body);
+	const editado = await update(id, usuario);
+	if (editado) {
+		let valido = false;
+		res.render("Usuario", {
+			layout: "Usuario",
+			usuario: editado,
+			valido,
+			mensaje: true,
+			error: false,
+			texto: "Usuario actualizado con éxito",
+		});
+	} else {
+		res.render("Usuario", {
+			layout: "Usuario",
+			usuario: editado,
+			valido,
+			mensaje: true,
+			error: true,
+			texto: "Error al actualizar el usuario.",
+		});
+	}
+});
+
+rutas.put("/update-estado/:id", async (req, res) => {
+	const { id } = req.params;
+	const estado = Object.values(req.body);
+	const result = await updateStatus(estado, id);
+	result > 0
+		? res.status(200).send(true)
+		: console.log("Error al editar Estado");
+});
 
 module.exports = rutas;
