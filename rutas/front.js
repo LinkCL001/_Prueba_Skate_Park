@@ -28,21 +28,23 @@ rutas.get("/datos", async (req, res) => {
   res.render("Datos", { skaters });
 });
 
-rutas.get("/skater-delete", async (_, res) => {
-  res.render("delete");
+rutas.get("/skater-delete", async (req, res) => {
+  const id = req.query
+  const skaters = await db.eliminar(id);
+  res.render("Delete", { skaters });
 });
 
 rutas.post("/skater-create", (req, res) => {
   const { fotos } = req.files;
-  fotos.mv(`${__dirname}/public/imgs/${fotos.name}`, (err) => {
-    console.log(err);
+  fotos.mv(`${__dirname}/public/imgs/${fotos.name}`, (e) => {
+    console.log(e);
   });
   req.body.foto = fotos.name;
   req.body.estado = false;
   db.ingresar(req.body)
     .then(() => res.redirect("/"))
-    .catch((err) =>
-      res.render("error", { title: "Error al crear skater", message: err })
+    .catch((e) =>
+      res.render("error", { title: "Error al crear skater", message: e })
     );
 });
 
@@ -80,8 +82,8 @@ rutas.post("/skater-delete/:id", async (req, res) => {
       await db.eliminar(id).then(() => res.redirect("/"))
     else
       res.redirect ("delete", { skater: await db.buscar(skaterId) })
-  } catch (err) {
-    res.render("error", { title: "Error al confirmar el skater", message: err })
+  } catch (e) {
+    res.render("error", { title: "Error al confirmar el skater", message: e })
   }
 })
 
