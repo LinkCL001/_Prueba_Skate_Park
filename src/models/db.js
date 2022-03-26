@@ -1,6 +1,5 @@
 require("dotenv").config();
 const { Pool } = require("pg");
-const { unlink } = require("fs");
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -51,46 +50,29 @@ const ingresar = (x) =>
     ]
   );
 
-const eliminar = async (id) => {
-  try {
-    const imagen = await pool.query(
-      `SELECT foto FROM skaters WHERE id = '${id}'`
-    );
-    const srcImg = "./public/imgs" + imagen.rows[0].foto;
-    const consulta = {
-      text: "DELETE FROM skaters WHERE id = $1 RETURNING *;",
-      values: [id],
-    };
-    const result = await pool.query(consulta);
-    if (result.rowCount > 0) {
-      unlink(srcImg, () => true);
-    }
-    return result.rowCount;
-  } catch (e) {
-    console.log(e);
-    return false;
-  }
-};
+const eliminar = (id) => pool.query("DELETE FROM skaters WHERE id = $1", [id]);
 
-const update = async (data) => {
-  const query =
-    "UPDATE skaters SET nombre = $1, password = $2, anos_experiencia = $3, especialidad = $4 WHERE id = $5 RETURNING*";
-  const values = data;
+const update = async (id, data) => {
   try {
-    const result = await pool.query(consulta(query, values));
-    return result.rows;
+    const updateSkater = await pool.query(
+      `UPDATE skaters SET email = '${data.email}', nombre = '${data.nombre}', password = '${data.password}', anos_experiencia = '${data.anos_experiencia}', especialidad = '${data.especialidad}'  WHERE id = ${id} RETURNING*`
+    );
+    return updateSkater.rows;
   } catch (e) {
     console.log(e);
     return e;
   }
 };
 
-const updateStatus = async (estado, id) => {
-  try {
+const updateStatus = async (id, estado) => {
+  try { 
+    console.log(id, estado);
     const result = await pool.query(
-      `UPDATE skaters SET estado = ${estado} WHERE id = ${id} RETURNING *;`
+      `UPDATE skaters SET estado = ${estado} WHERE id = ${id} RETURNING*`
     );
+    console.log(result);
     return result.rowCount;
+    
   } catch (e) {
     console.log(e);
     return false;

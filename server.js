@@ -4,7 +4,7 @@ const exphbs = require("express-handlebars");
 const front = require("./rutas/front");
 const api = require("./rutas/api");
 const expressFileUpload = require('express-fileupload');
-
+const skaterRouter = require('./src/routes');
 const port = process.env.PORT || 3000
 const app = express()
 
@@ -55,6 +55,8 @@ app.engine(
     },
   })
 );
+
+app.use('/', skaterRouter)
 
 app.use(api);
 

@@ -1,10 +1,27 @@
-<h1>Skate Park</h1>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="#">Navbar</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
 
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+      </li>
+      
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+      
+    </ul>
+  </div>
+</nav>
+<h1>Skate Park</h1>
+<h1>{{token}}</h1>
 <div class="py-4">
   <h2>Administración</h2>
   <hr class="w-50" />
-
-  <table class="table w-50 m-auto">
+  <table class="table table-dark">
     <thead>
       <tr>
         <th scope="col">#</th>
@@ -17,15 +34,21 @@
     </thead>
     <tbody>
       {{#each skaters}}
+      <form method="post" action="/skater/{{this.id}}" >
         <tr>
           <th scope="row">{{this.id}}</th>
           <td><img src="/imgs/{{this.foto}}" alt="foto" width="80px" /></td>
           <td>{{this.nombre}}</td>
           <td>{{this.anos_experiencia}}</td>
           <td>{{this.especialidad}}</td>
-          <td>check</td>
-          <td><input type="checkbox" {{this.estado}}/></td>
+          <td><input type="checkbox" name="estado" value={{this.estado}} 
+          {{#if this.estado}}
+            checked
+            {{/if}}
+          /></td>
+          <td><button name="action" value="updateStatus">Validar</button></td>
         </tr>
+       </form> 
       {{/each}}
     </tbody>
   </table>

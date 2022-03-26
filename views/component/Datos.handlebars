@@ -1,55 +1,83 @@
 <h1>Skate Park</h1>
 
-    <div class="py-4">
-      <h2>Datos del perfil</h2>
-      <hr class="w-50" />
-
-      <form method="GET" action="/skater-delete" enctype="multipart/form-data">
-        {{#each skaters}}
-        <div class="form-group row w-50 m-auto">
-          <div class="form-group col-12 col-sm-6">
-            <label>Email</label>
-            <input
-              class="form-control m-auto"
-              disabled
-              value={{this.email}}
-            />
-          </div>
-          <div class="form-group col-12 col-sm-6">
-            <label>Nombre</label>
-            <input class="form-control m-auto" value={{this.nombre}} />
-          </div>
-          <div class="form-group col-12 col-sm-6">
-            <label>Password</label>
-            <input
-              type="password"
-              class="form-control m-auto"
-              value={{this.password}}
-            />
-          </div>
-          <div class="form-group col-12 col-sm-6">
-            <label>Repita la password</label>
-            <input
-              type="password"
-              class="form-control m-auto"
-              value={{this.password}}
-            />
-          </div>
-          <div class="form-group col-12 col-sm-6">
-            <label>Años de experiencia</label>
-            <input class="form-control m-auto" value={{this.anos_experiencia}} />
-          </div>
-          <div class="form-group col-12 col-sm-6">
-            <label>Especialidad</label>
-            <input class="form-control m-auto" value={{this.especialidad}} />
-          </div>
+<div class="py-4">
+  <h2>Datos del perfil</h2>
+  <hr class="w-50" />
+  {{#each skater}}
+    <form
+      method="POST"
+      action="/skater/{{this.id}}"
+      enctype="multipart/form-data"
+      onsubmit="return confirm('¿Esta seguro de aplicar esta acción al usuario?')"
+    >
+      <div class="form-group row w-50 m-auto">
+        <div class="form-group col-12 col-sm-6">
+          <label>Email</label>
+          <input
+            name="email"
+            class="form-control m-auto"
+            disabled
+            value={{this.email}}
+          />
         </div>
-        <div class="mb-1">
-          <button class="btn btn-primary">Actualizar</button>
+        <div class="form-group col-12 col-sm-6">
+          <label>Nombre</label>
+          <input
+            class="form-control m-auto"
+            name="nombre"
+            value={{this.nombre}}
+          />
         </div>
-        <div>
-          <button type="submit" class="btn btn-danger">Eliminar cuenta</button>
+        <div class="form-group col-12 col-sm-6">
+          <label>Password</label>
+          <input
+            name="password"
+            type="password"
+            class="form-control m-auto"
+            value={{this.password}}
+          />
         </div>
-        {{/each}}
-      </form>
-    </div>
+        <div class="form-group col-12 col-sm-6">
+          <label>Repita la password</label>
+          <input
+            type="password"
+            class="form-control m-auto"
+            value={{this.password}}
+          />
+        </div>
+        <div class="form-group col-12 col-sm-6">
+          <label>Años de experiencia</label>
+          <input
+            name="anos_experiencia"
+            class="form-control m-auto"
+            value={{this.anos_experiencia}}
+          />
+        </div>
+        <div class="form-group col-12 col-sm-6">
+          <label>Especialidad</label>
+          <input
+            name="especialidad"
+            class="form-control m-auto"
+            value={{this.especialidad}}
+          />
+        </div>
+      </div>
+      <div class="mb-1">
+        <button
+          name="action"
+          type="submit"
+          class="btn btn-secondary"
+          value="editar"
+        >Actualizar</button>
+      </div>
+      <div>
+        <button
+          name="action"
+          type="submit"
+          class="btn btn-danger"
+          value="eliminar"
+        >Eliminar cuenta</button>
+      </div>
+    </form>
+  {{/each}}
+</div>
