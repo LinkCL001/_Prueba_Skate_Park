@@ -3,35 +3,42 @@
 ## Estructura del proyecto
 
 ```bash
-└── db.js
+└── src
+    ├── routes.js
+    └── controllers
+        ├── login.js
+        └── skaters.js
+    └── models
+        └── db.js
 └── migrate.js
 └── rutas
-    └── api.js
     └── front.js
     └── public
         └── imgs
+        └── css
 └── server.js
 └── Assets
     └── img
-└── data
-    └── admin.js
 └── views
     ├── Dashboard.handlebars
     ├── Login.handlebars
     ├── error.hadlebars
     ├── Registro.handlebars
+    ├── Admin.handlebars
+    ├── Datos.handlebars
     └── layouts
         └── main.handlebars
     └── component
         └── Admin.handlebars
         └── Datos.handlebars
         └── Home.handlebars
+└── data.sql
 ```
 
 ## Tabla PostgreSQL requerida
 
 Antes de correr este proyecto asegúrate de tener esta tabla creada
-
+se agregó admin como boolean para poder cambiar desde la base de datos al administrador
 ```sql
 CREATE DATABASE skatepark;
 
