@@ -7,8 +7,8 @@ const jwt = require("jsonwebtoken");
 const { response } = require("express");
 
 rutas.get("/", async (_, res) => {
-  const skaters = await db.listar();
-  res.render("Dashboard", { skaters });
+  const skaters = await db.listar();//insertando en la tabla la informacion de listar de la base de datos
+  res.render("Dashboard", { skaters });//rendereando a dashboard home con la informacion de skaters en la tabla
 });
 
 rutas.get("/skater-create", (_, res) => {
@@ -19,70 +19,70 @@ rutas.get("/login", (_, res) => {
   res.render("login");
 });
 
-const getCookies = (cookiesString) => {
+const getCookies = (cookiesString) => {//recibir token de las cookies
   const cookies = cookiesString.split("; ").reduce((prev, current) => {
     const [name, ...value] = current.split("=");
     prev[name] = value.join("=");
     return prev;
   }, {});
-  return cookies; //token en objeto ordenado
+  return cookies; //transformando token en un objeto
 };
 
 const validateToken = async (token) => {
   if (!token) {
     res.redirect("/login"); //usuario sin token redirect login
   }
-  const user = await jwt.verify(token, secretKey); //si existe lo devuelve como dato
-  return user;
+  const user = await jwt.verify(token, secretKey); 
+  return user;//si existe lo devuelve como dato
 };
 
-const validateAdmin = async (req, res, next) => {
+const validateAdmin = async (req, res, next) => {//middleware validando admin usando cookies y el token jwt
   const cookies = await getCookies(req.headers.cookie);
   const token = await validateToken(cookies.token);
-  if (!token.data.admin) {//admin false redirect datos
-    res.redirect("/datos");
+  if (!token.data.admin) {
+    res.redirect("/datos");//si admin false redirect datos
   }
   next();
 };
 
-rutas.get("/admin", validateAdmin, async (req, res) => {
+rutas.get("/admin", validateAdmin, async (req, res) => {//ruta admin con axios
   axios
     .get("http://localhost:3000/skaters")
     .then((response) => {
       console.log(response.data);
-      res.render("admin", { skaters: response.data });
+      res.render("admin", { skaters: response.data });//render a admin con la data skaters para rellenar la tabla
     })
     .catch((e) => {
       console.log(e);
     });
 });
 
-rutas.get("/datos", async (req, res) => {
+rutas.get("/datos", async (req, res) => {// validando usuario no admin usando cookies del headers y el token
   const cookies = await getCookies(req.headers.cookie);
   const token = await validateToken(cookies.token);
   console.log(token);
   axios
-    .get(`http://localhost:3000/skaters/${token.data.id}`)
+    .get(`http://localhost:3000/skaters/${token.data.id}`)//obteniendo id para ingresar con usuario con su id respectiva
     .then((response) => {
       console.log(response.data);
-      res.render("datos", { skater: response.data });
+      res.render("datos", { skater: response.data });//rendereando la data del skater hacia datos handlebars
     })
     .catch((e) => {
       console.log(e);
     });
 });
 
-rutas.post("/skater-create", (req, res) => {
-  const { fotos } = req.files;
-  fotos.mv(`${__dirname}/public/imgs/${fotos.name}`, (e) => {
+rutas.post("/skater-create", (req, res) => {// crear nuevo skater
+  const { fotos } = req.files;//obteniendo la data del archivo foto
+  fotos.mv(`${__dirname}/public/imgs/${fotos.name}`, (e) => {//guardando la foto en directorio
     console.log(e);
   });
-  req.body.foto = fotos.name;
-  req.body.estado = false;
+  req.body.foto = fotos.name;//obteniendo nombre de la foto
+  req.body.estado = false;//obteniendo estado default booleano false
   db.ingresar(req.body)
-    .then(() => res.redirect("/"))
+    .then(() => res.redirect("/"))//ingreso exitodo redirige al :3000/
     .catch((e) =>
-      res.render("error", { title: "Error al crear skater", message: e })
+      res.render("error", { title: "Error al crear skater", message: e })//mensaje error de ingreso
     );
 });
 
