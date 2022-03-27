@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { login } = require('../models/db');
 const secretKey = process.env["SECRET_KEY"];
+//generar token por usuario haciendo login 2minutos
 
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
@@ -22,3 +23,4 @@ const loginUser = async (req, res) => {
 module.exports = {
     loginUser
 }
+

@@ -45,7 +45,7 @@ const validateAdmin = async (req, res, next) => {//middleware validando admin us
   next();
 };
 
-rutas.get("/admin", validateAdmin, async (req, res) => {//ruta admin con axios
+rutas.get("/admin", validateAdmin, async (_, res) => {//ruta admin con axios
   axios
     .get("http://localhost:3000/skaters")
     .then((response) => {
@@ -80,26 +80,26 @@ rutas.post("/skater-create", (req, res) => {// crear nuevo skater
   req.body.foto = fotos.name;//obteniendo nombre de la foto
   req.body.estado = false;//obteniendo estado default booleano false
   db.ingresar(req.body)
-    .then(() => res.redirect("/"))//ingreso exitodo redirige al :3000/
+    .then(() => res.redirect("/"))//ingreso exitoso redirige al :3000/
     .catch((e) =>
       res.render("error", { title: "Error al crear skater", message: e })//mensaje error de ingreso
     );
 });
 
-rutas.post("/login-inicio", async (req, res) => {
+rutas.post("/login-inicio", async (req, res) => {//se obtiene del body email password
   const { email, password } = req.body;
   axios
-    .post("http://localhost:3000/login", { email, password })
+    .post("http://localhost:3000/login", { email, password })//se ingresa la data por axios
     .then(async (response) => {
       console.log(response);
-      const user = await jwt.verify(response.data.token, secretKey);
-      if (user.data.admin) {
+      const user = await jwt.verify(response.data.token, secretKey);//verificar token usuario
+      if (user.data.admin) {//si es admin
         res.cookie("token", response.data.token);
         res.cookie("test", response.data.token);
-        res.redirect("/Admin");
+        res.redirect("/Admin");//redirige a admin 
       } else {
         res.cookie("token", response.data.token);
-        res.redirect("/datos");
+        res.redirect("/datos");//de lo contrario redirige a datos de usuario
       }
     })
     .catch((e) => {
@@ -107,35 +107,35 @@ rutas.post("/login-inicio", async (req, res) => {
     });
 });
 
-rutas.post("/skater-delete/:id", async (req, res) => {
-  const { id } = req.params;
+rutas.post("/skater-delete/:id", async (req, res) => {//eliminar usuario
+  const { id } = req.params;// obtener id desde params
   console.log(token);
   axios
-    .get(`http://localhost:3000/skaters/${token.data.id}`)
+    .get(`http://localhost:3000/skaters/${token.data.id}`)//obtener data del id con axios
     .then((response) => {
       console.log(response.data);
-      res.render("datos", { skater: response.data });
+      res.render("datos", { skater: response.data });// renderea a datos con la data obtenida de axios
     })
     .catch((e) => {
       console.log(e);
     });
-  const skaters = await db.listar();
+  const skaters = await db.listar();//lo busca en la base de datos
   res.render("Delete", { skaters });
 });
 
-rutas.post("/skater/:id", async (req, res) => {
+rutas.post("/skater/:id", async (req, res) => {//eliminar editar y cambiar estado en una ruta post
   const { id } = req.params;
   const { action } = req.body;
   switch (action) {
-    case "editar":
+    case "editar"://editar usando la data obtenida del body
       delete req.body.action;
       try {
-        await db.update(id, req.body).then(() => res.redirect("/"));
+        await db.update(id, req.body).then(() => res.redirect("/"));//editando con su id y utilizandom informacion actualizada del body, para luego redireccionar al inicio
       } catch (e) {
         res.render("error", { title: "Error al editar usuario", message: e });
       }
       break;
-    case "eliminar":
+    case "eliminar"://eliminar usando axios con el id ya obtenido en la linea 110
       axios
         .delete(`http://localhost:3000/skaters/${id}`)
         .then((response) => {
@@ -145,16 +145,16 @@ rutas.post("/skater/:id", async (req, res) => {
             message = 'Usuario Eliminado'
           }
 
-          res.render("Dashboard", { skaters: response.data.skaters, message })
+          res.render("Dashboard", { skaters: response.data.skaters, message })//al eliminar renderea al home
         })
         .catch((e) => {
           console.log(e);
         });
       break;
     case "updateStatus":
-      const { estado } = req.body;
+      const { estado } = req.body;// obtiene estado desde el body
       try {
-        await db.updateStatus(id, !!estado).then(() => res.redirect("/Admin"));
+        await db.updateStatus(id, !!estado).then(() => res.redirect("/Admin"));//estado false redirige a admin
       } catch (e) {
         res.render("error", { title: "Error al editar usuario", message: e });
       }
@@ -164,10 +164,10 @@ rutas.post("/skater/:id", async (req, res) => {
   }
 });
 
-rutas.put("/update-estado/:id", async (req, res) => {
-  const { id } = req.params;
-  const estado = Object.values(req.body);
-  const result = await updateStatus(estado, id);
+rutas.put("/update-estado/:id", async (req, res) => {// editar estado boolerano false a true 
+  const { id } = req.params;//obtener id desde params
+  const estado = Object.values(req.body);//obtener estado desde el body
+  const result = await updateStatus(estado, id);//llamar a la funcion de la bd
   result > 0
     ? res.status(200).send(true)
     : console.log("Error al editar Estado");

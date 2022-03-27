@@ -7,7 +7,7 @@ const {
   updateStatus,
 } = require("../models/db");
 
-const getAll = async (req, res) => {
+const getAll = async (_, res) => {
   const skaters = await listar();
   return res.json(skaters);
 };
@@ -16,7 +16,7 @@ const getOne = async (req, res) => {
   const skaters = await buscar(id);
   return res.json(skaters);
 };
-const insertOne = async (req, res) => {
+const insertOne = async (_, res) => {
   const skaters = await ingresar(x);
   return res.json(skaters);
 };
