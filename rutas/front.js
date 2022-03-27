@@ -1,7 +1,7 @@
 const { Router } = require("express");
 const db = require("../src/models/db");
 const rutas = Router();
-const axios = require('axios');
+const axios = require("axios");
 const secretKey = process.env["SECRET_KEY"];
 const jwt = require("jsonwebtoken");
 const { response } = require("express");
@@ -19,28 +19,57 @@ rutas.get("/login", (_, res) => {
   res.render("login");
 });
 
-rutas.get("/admin", async (req, res) => {
-  const cookies = (req.headers.cookie).split('; ').reduce((prev, current) => {
-    const [name, ...value] = current.split('=');
-    prev[name] = value.join('=');
+const getCookies = (cookiesString) => {
+  const cookies = cookiesString.split("; ").reduce((prev, current) => {
+    const [name, ...value] = current.split("=");
+    prev[name] = value.join("=");
     return prev;
   }, {});
-  if (!cookies.token) {
-    res.redirect('/login')
+  return cookies; //token en objeto ordenado
+};
+
+const validateToken = async (token) => {
+  if (!token) {
+    res.redirect("/login"); //usuario sin token redirect login
   }
-  const user = await jwt.verify(cookies.token, secretKey)
-  if (!user.data.admin) {
-    res.redirect('/datos')
+  const user = await jwt.verify(token, secretKey); //si existe lo devuelve como dato
+  return user;
+};
+
+const validateAdmin = async (req, res, next) => {
+  const cookies = await getCookies(req.headers.cookie);
+  const token = await validateToken(cookies.token);
+  if (!token.data.admin) {//admin false redirect datos
+    res.redirect("/datos");
   }
-  console.log(cookies.token);
-  // const skaters = await db.listar();
-  // res.render("Admin", { skaters });
+  next();
+};
+
+rutas.get("/admin", validateAdmin, async (req, res) => {
+  axios
+    .get("http://localhost:3000/skaters")
+    .then((response) => {
+      console.log(response.data);
+      res.render("admin", { skaters: response.data });
+    })
+    .catch((e) => {
+      console.log(e);
+    });
 });
 
 rutas.get("/datos", async (req, res) => {
-  const skaterId = req.query.skaterId;
-  const skaters = await db.buscar(skaterId);
-  res.render("Datos", { skaters });
+  const cookies = await getCookies(req.headers.cookie);
+  const token = await validateToken(cookies.token);
+  console.log(token);
+  axios
+    .get(`http://localhost:3000/skaters/${token.data.id}`)
+    .then((response) => {
+      console.log(response.data);
+      res.render("datos", { skater: response.data });
+    })
+    .catch((e) => {
+      console.log(e);
+    });
 });
 
 rutas.post("/skater-create", (req, res) => {
@@ -59,49 +88,37 @@ rutas.post("/skater-create", (req, res) => {
 
 rutas.post("/login-inicio", async (req, res) => {
   const { email, password } = req.body;
-  axios.post('http://localhost:3000/login', { email, password }).then(async response => {
-    console.log(response);
-    const user = await jwt.verify(response.data.token, secretKey)
-    if (user.data.admin) {
-      res.cookie('token', response.data.token)
-      res.cookie('test', response.data.token)
-      res.redirect("/Admin")
-    } else {
-      res.cookie('token', response.data.token)
-      res.redirect("/datos")
-    }
-  }
-  ).catch((e) => {
-    console.log(e)
-  })
-
-  // try {
-  //   const { email, password } = req.body;
-  //   const skater = await db.login(email, password);
-
-  //   if (skater) {
-  //     const token = jwt.sign(
-  //       {
-  //         exp: Math.floor(Date.now() / 1000) + 120,
-  //         data: skater,
-  //       },
-  //       secretKey
-  //     );
-  //   } else {
-  //     res.send("Usuario o contraseña incorrecta");
-  //   }
-
-  //   const template =
-  //     skater.admin === true ? "/admin" : `/datos?skaterId=${skater.id}`;
-  //   res.redirect(template,{token});
-  // } catch (err) {
-  //   console.log({ err });
-  // }
+  axios
+    .post("http://localhost:3000/login", { email, password })
+    .then(async (response) => {
+      console.log(response);
+      const user = await jwt.verify(response.data.token, secretKey);
+      if (user.data.admin) {
+        res.cookie("token", response.data.token);
+        res.cookie("test", response.data.token);
+        res.redirect("/Admin");
+      } else {
+        res.cookie("token", response.data.token);
+        res.redirect("/datos");
+      }
+    })
+    .catch((e) => {
+      console.log(e);
+    });
 });
 
-
-
-rutas.get("/skater-delete", async (_, res) => {
+rutas.post("/skater-delete/:id", async (req, res) => {
+  const { id } = req.params;
+  console.log(token);
+  axios
+    .get(`http://localhost:3000/skaters/${token.data.id}`)
+    .then((response) => {
+      console.log(response.data);
+      res.render("datos", { skater: response.data });
+    })
+    .catch((e) => {
+      console.log(e);
+    });
   const skaters = await db.listar();
   res.render("Delete", { skaters });
 });
@@ -109,8 +126,8 @@ rutas.get("/skater-delete", async (_, res) => {
 rutas.post("/skater/:id", async (req, res) => {
   const { id } = req.params;
   const { action } = req.body;
-  switch(action) {
-    case 'editar':
+  switch (action) {
+    case "editar":
       delete req.body.action;
       try {
         await db.update(id, req.body).then(() => res.redirect("/"));
@@ -118,14 +135,23 @@ rutas.post("/skater/:id", async (req, res) => {
         res.render("error", { title: "Error al editar usuario", message: e });
       }
       break;
-    case 'eliminar':
-      try {
-        await db.eliminar(id).then(() => res.redirect("/"));
-      } catch (e) {
-        res.render("error", { title: "Error al eliminar usuario", message: e });
-      }
+    case "eliminar":
+      axios
+        .delete(`http://localhost:3000/skaters/${id}`)
+        .then((response) => {
+          console.log(response);
+          let message = 'No se pudo eliminar el Skater';
+          if (response.data.skaterDelete.rowCount > 0) {
+            message = 'Usuario Eliminado'
+          }
+
+          res.render("Dashboard", { skaters: response.data.skaters, message })
+        })
+        .catch((e) => {
+          console.log(e);
+        });
       break;
-    case 'updateStatus':
+    case "updateStatus":
       const { estado } = req.body;
       try {
         await db.updateStatus(id, !!estado).then(() => res.redirect("/Admin"));
@@ -135,7 +161,7 @@ rutas.post("/skater/:id", async (req, res) => {
       break;
     default:
       break;
-   }
+  }
 });
 
 rutas.put("/update-estado/:id", async (req, res) => {

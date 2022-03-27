@@ -65,14 +65,13 @@ const update = async (id, data) => {
 };
 
 const updateStatus = async (id, estado) => {
-  try { 
+  try {
     console.log(id, estado);
     const result = await pool.query(
       `UPDATE skaters SET estado = ${estado} WHERE id = ${id} RETURNING*`
     );
     console.log(result);
     return result.rowCount;
-    
   } catch (e) {
     console.log(e);
     return false;

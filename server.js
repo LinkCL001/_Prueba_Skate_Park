@@ -3,45 +3,40 @@ const bodyParser = require("body-parser");
 const exphbs = require("express-handlebars");
 const front = require("./rutas/front");
 const api = require("./rutas/api");
-const expressFileUpload = require('express-fileupload');
-const skaterRouter = require('./src/routes');
-const port = process.env.PORT || 3000
-const app = express()
+const expressFileUpload = require("express-fileupload");
+const skaterRouter = require("./src/routes");
+const port = process.env.PORT || 3000;
+const app = express();
+
 
 app.listen(port, () => {
-  console.log(`El servidor está inicializando en el puerto ${port}`)
-})
+  console.log(`El servidor está inicializando en el puerto ${port}`);
+});
 
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 app.set("view engine", "handlebars");
 
-app.use(
-  "/", express.static("public")
-);
-app.use(
-  "/imgs", express.static(__dirname + "/rutas/public/imgs")
-);
-app.use(
-  "/css", express.static(__dirname + "/node_modules/bootstrap/dist/css")
-);
+app.use("/", express.static("public"));
+app.use("/imgs", express.static(__dirname + "/rutas/public/imgs"));
+app.use("/css", express.static(__dirname + "/node_modules/bootstrap/dist/css"));
 app.use(
   "/bootstrap",
   express.static(__dirname + "/node_modules/bootstrap/dist/css")
 );
-app.use(
-  "/jquery", express.static(__dirname + "/node_modules/jquery/dist")
-);
+app.use("/jquery", express.static(__dirname + "/node_modules/jquery/dist"));
 app.use(
   "/bootstrapJS",
   express.static(__dirname + "/node_modules/bootstrap/dist/js")
 );
 
-app.use(expressFileUpload({
-  limits: { fileSize: 5000000 },
-  abortOnLimit: true,
-  responseOnLimit: "El peso del archivo que intentas subir supera el limite permitido",
+app.use(
+  expressFileUpload({
+    limits: { fileSize: 5000000 },
+    abortOnLimit: true,
+    responseOnLimit:
+      "El peso del archivo que intentas subir supera el limite permitido",
   })
 );
 
@@ -56,12 +51,11 @@ app.engine(
   })
 );
 
-app.use('/', skaterRouter)
+app.use("/", skaterRouter);
 
 app.use(api);
 
 app.use(front);
-
 
 // 1. Crear una API REST con el Framework Express (2 Puntos)
 // 2. Servir contenido dinámico con express-handlebars (1 Punto)
